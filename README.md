@@ -24,7 +24,26 @@ Bu proje, bir futbol takımının yönetimini kolaylaştırmak için geliştiril
 
 ## 📷 Ekran Görüntüleri
 
-Ekran görüntüleri için [`/screenshots`](/screenshots) klasörüne bakabilirsiniz.
+### Giriş Ekranı
+![Giriş Ekranı](screenshots/GirişEkranı.png)
+
+### Ana Sayfa
+![Ana Sayfa](screenshots/AnaSayfa.png)
+
+### Futbolcu Listesi
+![Futbolcu Listesi](screenshots/FutbolcuListesi.png)
+
+### Yeni Futbolcu Ekleme
+![Yeni Futbolcu Ekleme](screenshots/YeniFutbolcuEkleme.png)
+
+### Antrenman Ekranı
+![Antrenman Ekranı](screenshots/AntrenmanEkranı.png)
+
+### Antrenmana Katılanlar
+![Antrenmana Katılanlar](screenshots/AntrenmanaKatılanlar.png)
+
+### Antrenmana Oyuncu Ekleme
+![Antrenmana Oyuncu Ekleme](screenshots/AntrenmanaOyuncuEkleme.png)
 
 ## 🚀 Kurulum
 
