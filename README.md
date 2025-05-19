@@ -24,23 +24,14 @@ Bu proje, bir futbol takımının yönetimini kolaylaştırmak için geliştiril
 
 ## 📷 Ekran Görüntüleri
 
-### Giriş Ekranı
-![Giriş Ekranı](screenshots/GirişEkranı.png)
+### Ana Ekran
+![Ana Ekran](screenshots/AnaEkran.png)
 
-### Ana Sayfa
-![Ana Sayfa](screenshots/AnaSayfa.png)
+### Futbolcu Ekleme
+![Futbolcu Ekleme](screenshots/FutbolcuEkleme.png)
 
-### Futbolcu Listesi
-![Futbolcu Listesi](screenshots/FutbolcuListesi.png)
-
-### Yeni Futbolcu Ekleme
-![Yeni Futbolcu Ekleme](screenshots/YeniFutbolcuEkleme.png)
-
-### Antrenman Ekranı
-![Antrenman Ekranı](screenshots/AntrenmanEkranı.png)
-
-### Antrenmana Katılanlar
-![Antrenmana Katılanlar](screenshots/AntrenmanaKatılanlar.png)
+### Antrenman Ekleme
+![Antrenman Ekleme](screenshots/AntrenmanEkleme.png)
 
 ### Antrenmana Oyuncu Ekleme
 ![Antrenmana Oyuncu Ekleme](screenshots/AntrenmanaOyuncuEkleme.png)
