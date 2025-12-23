@@ -1,18 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Windows.Forms;
 using FutbolTakimiYonetimSistemi.Models;
 using FutbolTakimiYonetimSistemi.Services;
+using FutbolTakimiYonetimSistemi.Utils;
 
 namespace FutbolTakimiYonetimSistemi.Forms
 {
     public partial class FutbolcuListesiForm : Form
     {
         private List<Futbolcu> _futbolcular;
+        private bool _saltOkunur;
 
-        public FutbolcuListesiForm()
+        public FutbolcuListesiForm(bool saltOkunur = false)
         {
             InitializeComponent();
+            _saltOkunur = saltOkunur;
         }
 
         private void FutbolcuListesiForm_Load(object sender, EventArgs e)
@@ -20,7 +24,62 @@ namespace FutbolTakimiYonetimSistemi.Forms
             // Formu tam ekran yap
             this.WindowState = FormWindowState.Maximized;
             
+            // Modern stil uygula
+            UygulaModernStiller();
+            
+            // Salt okunur modda ise butonları kapat
+            if (_saltOkunur)
+            {
+                btnYeniFutbolcu.Enabled = false;
+                btnDuzenle.Enabled = false;
+                btnSil.Enabled = false;
+                
+                btnYeniFutbolcu.BackColor = ColorTranslator.FromHtml("#95A5A6");
+                btnDuzenle.BackColor = ColorTranslator.FromHtml("#95A5A6");
+                btnSil.BackColor = ColorTranslator.FromHtml("#95A5A6");
+                
+                btnYeniFutbolcu.Text = "🔒 YETKİ YOK";
+                btnDuzenle.Text = "🔒 YETKİ YOK";
+                btnSil.Text = "🔒 YETKİ YOK";
+                
+                this.Text = "Futbolcu Listesi (Salt Okunur - Antrenör)";
+            }
+            
             YenileFutbolcuListesi();
+        }
+
+        private void UygulaModernStiller()
+        {
+            // Form arkaplan
+            FormStilleri.ModernForm(this);
+
+            // DataGridView modern stil
+            FormStilleri.ModernDataGridView(dgvFutbolcular);
+
+            // Paneller
+            pnlArama.BackColor = Color.White;
+            pnlArama.Padding = new Padding(15);
+            pnlIslemler.BackColor = FormStilleri.Renkler.AcikArkaplan;
+            pnlIslemler.Padding = new Padding(15, 10, 15, 10);
+
+            // Arama kutusu ve label
+            FormStilleri.ModernLabel(lblArama);
+            FormStilleri.ModernTextBox(txtArama);
+            FormStilleri.ModernButon(btnAra, "mavi");
+            btnAra.Text = "🔍 ARA";
+
+            // İşlem butonları
+            FormStilleri.ModernButon(btnYeniFutbolcu, "yesil");
+            btnYeniFutbolcu.Text = "+ YENİ FUTBOLCU";
+
+            FormStilleri.ModernButon(btnDuzenle, "turuncu");
+            btnDuzenle.Text = "✏️ DÜZENLE";
+
+            FormStilleri.ModernButon(btnSil, "kirmizi");
+            btnSil.Text = "🗑️ SİL";
+
+            FormStilleri.ModernButon(btnYenile, "gri");
+            btnYenile.Text = "🔄 YENİLE";
         }
 
         public void YenileFutbolcuListesi()
@@ -42,22 +101,25 @@ namespace FutbolTakimiYonetimSistemi.Forms
 
         private void DuzenleDataGrid()
         {
+            // Gereksiz sütunları gizle
             dgvFutbolcular.Columns["FutbolcuID"].Visible = false;
             dgvFutbolcular.Columns["Resim"].Visible = false;
+            dgvFutbolcular.Columns["Notlar"].Visible = false;
+            dgvFutbolcular.Columns["Ad"].Visible = false;  // TamAd varken gereksiz
+            dgvFutbolcular.Columns["Soyad"].Visible = false;  // TamAd varken gereksiz
             
-            dgvFutbolcular.Columns["Ad"].HeaderText = "Ad";
-            dgvFutbolcular.Columns["Soyad"].HeaderText = "Soyad";
+            // Header metinleri
             dgvFutbolcular.Columns["TamAd"].HeaderText = "Adı Soyadı";
             dgvFutbolcular.Columns["DogumTarihi"].HeaderText = "Doğum Tarihi";
             dgvFutbolcular.Columns["Yas"].HeaderText = "Yaş";
-            dgvFutbolcular.Columns["Boy"].HeaderText = "Boy (cm)";
-            dgvFutbolcular.Columns["Kilo"].HeaderText = "Kilo (kg)";
+            dgvFutbolcular.Columns["Boy"].HeaderText = "Boy";
+            dgvFutbolcular.Columns["Kilo"].HeaderText = "Kilo";
             dgvFutbolcular.Columns["Pozisyon"].HeaderText = "Pozisyon";
-            dgvFutbolcular.Columns["FormaNo"].HeaderText = "Forma No";
+            dgvFutbolcular.Columns["FormaNo"].HeaderText = "No";
             dgvFutbolcular.Columns["Maas"].HeaderText = "Maaş (₺)";
             dgvFutbolcular.Columns["Uyruk"].HeaderText = "Uyruk";
-            dgvFutbolcular.Columns["SozlesmeBaslangic"].HeaderText = "Sözleşme Başlangıç";
-            dgvFutbolcular.Columns["SozlesmeBitis"].HeaderText = "Sözleşme Bitiş";
+            dgvFutbolcular.Columns["SozlesmeBaslangic"].HeaderText = "Sözleşme Baş.";
+            dgvFutbolcular.Columns["SozlesmeBitis"].HeaderText = "Sözleşme Bit.";
             dgvFutbolcular.Columns["KalanSozlesmeSuresi"].HeaderText = "Kalan Süre";
             dgvFutbolcular.Columns["Durumu"].HeaderText = "Durum";
 
@@ -67,8 +129,59 @@ namespace FutbolTakimiYonetimSistemi.Forms
             dgvFutbolcular.Columns["SozlesmeBitis"].DefaultCellStyle.Format = "dd.MM.yyyy";
             dgvFutbolcular.Columns["Maas"].DefaultCellStyle.Format = "N2";
 
-            // Sütun genişliklerini ayarla
-            dgvFutbolcular.AutoResizeColumns();
+            // Sütun genişlikleri (responsive)
+            dgvFutbolcular.Columns["TamAd"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["TamAd"].Width = 150;
+            dgvFutbolcular.Columns["TamAd"].MinimumWidth = 120;
+            
+            dgvFutbolcular.Columns["DogumTarihi"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["DogumTarihi"].Width = 100;
+            
+            dgvFutbolcular.Columns["Yas"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["Yas"].Width = 50;
+            
+            dgvFutbolcular.Columns["Boy"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["Boy"].Width = 60;
+            
+            dgvFutbolcular.Columns["Kilo"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["Kilo"].Width = 60;
+            
+            dgvFutbolcular.Columns["Pozisyon"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["Pozisyon"].Width = 90;
+            
+            dgvFutbolcular.Columns["FormaNo"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["FormaNo"].Width = 45;
+            
+            dgvFutbolcular.Columns["Maas"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["Maas"].Width = 100;
+            
+            dgvFutbolcular.Columns["Uyruk"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["Uyruk"].Width = 80;
+            
+            dgvFutbolcular.Columns["SozlesmeBaslangic"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["SozlesmeBaslangic"].Width = 110;
+            
+            dgvFutbolcular.Columns["SozlesmeBitis"].AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+            dgvFutbolcular.Columns["SozlesmeBitis"].Width = 110;
+            
+            // Bu sütunlar responsive (kalan alanı paylaşırlar)
+            dgvFutbolcular.Columns["KalanSozlesmeSuresi"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvFutbolcular.Columns["KalanSozlesmeSuresi"].FillWeight = 30;
+            dgvFutbolcular.Columns["KalanSozlesmeSuresi"].MinimumWidth = 80;
+            
+            dgvFutbolcular.Columns["Durumu"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvFutbolcular.Columns["Durumu"].FillWeight = 25;
+            dgvFutbolcular.Columns["Durumu"].MinimumWidth = 80;
+
+            // Satırları duruma göre renklendir
+            foreach (DataGridViewRow row in dgvFutbolcular.Rows)
+            {
+                if (row.Cells["Durumu"].Value != null)
+                {
+                    string durum = row.Cells["Durumu"].Value.ToString();
+                    FormStilleri.RenklendirilmisSatir(row, durum);
+                }
+            }
         }
 
         private void btnAra_Click(object sender, EventArgs e)
@@ -98,6 +211,12 @@ namespace FutbolTakimiYonetimSistemi.Forms
 
         private void btnYeniFutbolcu_Click(object sender, EventArgs e)
         {
+            if (_saltOkunur)
+            {
+                MessageBox.Show("Antrenörler futbolcu ekleyemez!", "Yetki Yok", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             FutbolcuEditForm futbolcuEditForm = new FutbolcuEditForm();
             futbolcuEditForm.FormClosed += (s, args) => YenileFutbolcuListesi();
             futbolcuEditForm.ShowDialog();
@@ -105,6 +224,12 @@ namespace FutbolTakimiYonetimSistemi.Forms
 
         private void btnDuzenle_Click(object sender, EventArgs e)
         {
+            if (_saltOkunur)
+            {
+                MessageBox.Show("Antrenörler futbolcu düzenleyemez!", "Yetki Yok", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             DuzenleFutbolcu();
         }
 
@@ -112,6 +237,11 @@ namespace FutbolTakimiYonetimSistemi.Forms
         {
             if (e.RowIndex >= 0)
             {
+                if (_saltOkunur)
+                {
+                    MessageBox.Show("Sadece görüntüleme modundasınız.", "Bilgi", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
                 DuzenleFutbolcu();
             }
         }
@@ -129,6 +259,12 @@ namespace FutbolTakimiYonetimSistemi.Forms
 
         private void btnSil_Click(object sender, EventArgs e)
         {
+            if (_saltOkunur)
+            {
+                MessageBox.Show("Antrenörler futbolcu silemez!", "Yetki Yok", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             if (dgvFutbolcular.CurrentRow != null)
             {
                 int futbolcuId = (int)dgvFutbolcular.CurrentRow.Cells["FutbolcuID"].Value;
@@ -179,7 +315,7 @@ namespace FutbolTakimiYonetimSistemi.Forms
             this.dgvFutbolcular.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvFutbolcular.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvFutbolcular.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.None;
             this.dgvFutbolcular.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvFutbolcular.Location = new System.Drawing.Point(12, 72);
             this.dgvFutbolcular.MultiSelect = false;
@@ -248,9 +384,9 @@ namespace FutbolTakimiYonetimSistemi.Forms
             // btnYenile
             // 
             this.btnYenile.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.btnYenile.Location = new System.Drawing.Point(12, 12);
+            this.btnYenile.Location = new System.Drawing.Point(581, 12);
             this.btnYenile.Name = "btnYenile";
-            this.btnYenile.Size = new System.Drawing.Size(135, 35);
+            this.btnYenile.Size = new System.Drawing.Size(130, 35);
             this.btnYenile.TabIndex = 3;
             this.btnYenile.Text = "Listeyi Yenile";
             this.btnYenile.UseVisualStyleBackColor = true;
@@ -260,9 +396,9 @@ namespace FutbolTakimiYonetimSistemi.Forms
             // 
             this.btnSil.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSil.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.btnSil.Location = new System.Drawing.Point(849, 12);
+            this.btnSil.Location = new System.Drawing.Point(721, 12);
             this.btnSil.Name = "btnSil";
-            this.btnSil.Size = new System.Drawing.Size(70, 35);
+            this.btnSil.Size = new System.Drawing.Size(120, 35);
             this.btnSil.TabIndex = 2;
             this.btnSil.Text = "Sil";
             this.btnSil.UseVisualStyleBackColor = true;
@@ -272,9 +408,9 @@ namespace FutbolTakimiYonetimSistemi.Forms
             // 
             this.btnDuzenle.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnDuzenle.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
-            this.btnDuzenle.Location = new System.Drawing.Point(925, 12);
+            this.btnDuzenle.Location = new System.Drawing.Point(851, 12);
             this.btnDuzenle.Name = "btnDuzenle";
-            this.btnDuzenle.Size = new System.Drawing.Size(70, 35);
+            this.btnDuzenle.Size = new System.Drawing.Size(140, 35);
             this.btnDuzenle.TabIndex = 1;
             this.btnDuzenle.Text = "Düzenle";
             this.btnDuzenle.UseVisualStyleBackColor = true;
@@ -286,7 +422,7 @@ namespace FutbolTakimiYonetimSistemi.Forms
             this.btnYeniFutbolcu.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.btnYeniFutbolcu.Location = new System.Drawing.Point(1001, 12);
             this.btnYeniFutbolcu.Name = "btnYeniFutbolcu";
-            this.btnYeniFutbolcu.Size = new System.Drawing.Size(70, 35);
+            this.btnYeniFutbolcu.Size = new System.Drawing.Size(140, 35);
             this.btnYeniFutbolcu.TabIndex = 0;
             this.btnYeniFutbolcu.Text = "Yeni";
             this.btnYeniFutbolcu.UseVisualStyleBackColor = true;

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using FutbolTakimiYonetimSistemi.Models;
 using FutbolTakimiYonetimSistemi.Services;
+using FutbolTakimiYonetimSistemi.Utils;
 
 namespace FutbolTakimiYonetimSistemi.Forms
 {
@@ -21,6 +22,39 @@ namespace FutbolTakimiYonetimSistemi.Forms
             comboBoxTur.Items.AddRange(new string[] { "Tümü", "Kondisyon", "Taktik", "Teknik" });
             comboBoxTur.SelectedIndex = 0;
             YenileAntrenmanListesi();
+            UygulaModernStiller();
+        }
+
+        private void UygulaModernStiller()
+        {
+            FormStilleri.ModernForm(this);
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Button btn)
+                {
+                    if (btn.Text.Contains("Yeni") || btn.Text.Contains("Ekle")) FormStilleri.ModernButon(btn, "yesil");
+                    else if (btn.Text.Contains("Sil")) FormStilleri.ModernButon(btn, "kirmizi");
+                    else if (btn.Text.Contains("Kapat") || btn.Text.Contains("İptal")) FormStilleri.ModernButon(btn, "gri");
+                    else FormStilleri.ModernButon(btn, "mavi");
+                }
+                else if (ctrl is TextBox txt) FormStilleri.ModernTextBox(txt);
+                else if (ctrl is Label lbl) FormStilleri.ModernLabel(lbl);
+                else if (ctrl is ComboBox cmb) FormStilleri.ModernComboBox(cmb);
+                else if (ctrl is Panel pnl) ApplyToPanel(pnl);
+            }
+        }
+
+        private void ApplyToPanel(Panel pnl)
+        {
+            foreach (Control ctrl in pnl.Controls)
+            {
+                if (ctrl is Button btn)
+                {
+                    if (btn.Text.Contains("Yeni")) FormStilleri.ModernButon(btn, "yesil");
+                    else if (btn.Text.Contains("Sil")) FormStilleri.ModernButon(btn, "kirmizi");
+                    else FormStilleri.ModernButon(btn, "mavi");
+                }
+            }
         }
 
         public void YenileAntrenmanListesi()

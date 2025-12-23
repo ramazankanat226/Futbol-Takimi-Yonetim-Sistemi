@@ -1,7 +1,9 @@
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 using FutbolTakimiYonetimSistemi.Models;
 using FutbolTakimiYonetimSistemi.Services;
+using FutbolTakimiYonetimSistemi.Utils;
 
 namespace FutbolTakimiYonetimSistemi.Forms
 {
@@ -31,7 +33,7 @@ namespace FutbolTakimiYonetimSistemi.Forms
         private void AntrenmanEditForm_Load(object sender, EventArgs e)
         {
             // Tür combobox'ını doldur
-            comboBoxTur.Items.AddRange(new string[] { "Kondisyon", "Taktik", "Teknik" });
+            comboBoxTur.Items.AddRange(new string[] { "Kondisyon", "Taktik", "Teknik", "Hazırlık Maçı", "Toparlanma" });
             
             if (_isEditMode)
             {
@@ -42,6 +44,24 @@ namespace FutbolTakimiYonetimSistemi.Forms
             {
                 Text = "Yeni Antrenman";
                 comboBoxTur.SelectedIndex = 0;
+            }
+            UygulaModernStiller();
+
+            // Stil uygulamasından sonra SADECE SAAT göster
+            SaatPickerlariniAyarla();
+        }
+
+        private void UygulaModernStiller()
+        {
+            FormStilleri.ModernForm(this);
+            FormStilleri.ModernButon(btnKaydet, "yesil");
+            FormStilleri.ModernButon(btnIptal, "gri");
+            FormStilleri.ModernComboBox(comboBoxTur);
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is TextBox txt) FormStilleri.ModernTextBox(txt);
+                else if (ctrl is Label lbl) FormStilleri.ModernLabel(lbl);
+                else if (ctrl is DateTimePicker dtp) FormStilleri.ModernDateTimePicker(dtp);
             }
         }
 
@@ -62,6 +82,9 @@ namespace FutbolTakimiYonetimSistemi.Forms
             }
             
             txtNot.Text = _antrenman.Notlar;
+
+            // Stil sonrası saat formatını koru
+            SaatPickerlariniAyarla();
         }
 
         private void btnKaydet_Click(object sender, EventArgs e)
@@ -74,9 +97,10 @@ namespace FutbolTakimiYonetimSistemi.Forms
             try
             {
                 // Form verilerini antrenman nesnesine aktar
-                _antrenman.Tarih = datePickerTarih.Value;
-                _antrenman.BaslangicSaati = dateTimePickerBaslangic.Value;
-                _antrenman.BitisSaati = dateTimePickerBitis.Value;
+                _antrenman.Tarih = datePickerTarih.Value.Date;
+                // Tarih + saat birleşimi (tarih picker + saat picker)
+                _antrenman.BaslangicSaati = datePickerTarih.Value.Date.Add(dateTimePickerBaslangic.Value.TimeOfDay);
+                _antrenman.BitisSaati = datePickerTarih.Value.Date.Add(dateTimePickerBitis.Value.TimeOfDay);
                 _antrenman.Tur = comboBoxTur.SelectedItem?.ToString() ?? "";
                 _antrenman.Notlar = string.IsNullOrWhiteSpace(txtNot.Text) ? null : txtNot.Text;
 
@@ -133,6 +157,24 @@ namespace FutbolTakimiYonetimSistemi.Forms
         private void btnIptal_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.Cancel;
+        }
+
+        /// <summary>
+        /// Saat picker'larını sadece saat/dakika gösterecek şekilde ayarlar
+        /// </summary>
+        private void SaatPickerlariniAyarla()
+        {
+            // Başlangıç
+            dateTimePickerBaslangic.Format = DateTimePickerFormat.Custom;
+            dateTimePickerBaslangic.CustomFormat = "HH:mm";
+            dateTimePickerBaslangic.ShowUpDown = true;
+            dateTimePickerBaslangic.Width = 100;
+
+            // Bitiş
+            dateTimePickerBitis.Format = DateTimePickerFormat.Custom;
+            dateTimePickerBitis.CustomFormat = "HH:mm";
+            dateTimePickerBitis.ShowUpDown = true;
+            dateTimePickerBitis.Width = 100;
         }
 
         private void InitializeComponent()
@@ -218,7 +260,7 @@ namespace FutbolTakimiYonetimSistemi.Forms
             this.dateTimePickerBaslangic.Location = new System.Drawing.Point(158, 68);
             this.dateTimePickerBaslangic.Name = "dateTimePickerBaslangic";
             this.dateTimePickerBaslangic.ShowUpDown = true;
-            this.dateTimePickerBaslangic.Size = new System.Drawing.Size(200, 24);
+            this.dateTimePickerBaslangic.Size = new System.Drawing.Size(100, 24);
             this.dateTimePickerBaslangic.TabIndex = 6;
             // 
             // dateTimePickerBitis
@@ -229,7 +271,7 @@ namespace FutbolTakimiYonetimSistemi.Forms
             this.dateTimePickerBitis.Location = new System.Drawing.Point(158, 108);
             this.dateTimePickerBitis.Name = "dateTimePickerBitis";
             this.dateTimePickerBitis.ShowUpDown = true;
-            this.dateTimePickerBitis.Size = new System.Drawing.Size(200, 24);
+            this.dateTimePickerBitis.Size = new System.Drawing.Size(100, 24);
             this.dateTimePickerBitis.TabIndex = 7;
             // 
             // comboBoxTur

@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using FutbolTakimiYonetimSistemi.Models;
 using FutbolTakimiYonetimSistemi.Services;
+using FutbolTakimiYonetimSistemi.Utils;
 
 namespace FutbolTakimiYonetimSistemi.Forms
 {
@@ -25,6 +26,23 @@ namespace FutbolTakimiYonetimSistemi.Forms
             lblSaat.Text = $"Saat: {_antrenman.BaslangicSaati.ToShortTimeString()} - {_antrenman.BitisSaati.ToShortTimeString()}";
 
             YukleKatilimlar();
+            UygulaModernStiller();
+        }
+
+        private void UygulaModernStiller()
+        {
+            FormStilleri.ModernForm(this);
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Button btn) FormStilleri.ModernButon(btn, "gri");
+                else if (ctrl is Label lbl) FormStilleri.ModernLabel(lbl);
+                else if (ctrl is DataGridView dgv) FormStilleri.ModernDataGridView(dgv);
+                else if (ctrl is ListView lv)
+                {
+                    lv.BackColor = Color.White;
+                    lv.Font = new Font("Segoe UI", 10);
+                }
+            }
         }
 
         private void YukleKatilimlar()

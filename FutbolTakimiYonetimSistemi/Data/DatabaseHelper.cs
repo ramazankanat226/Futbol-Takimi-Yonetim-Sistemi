@@ -1,42 +1,58 @@
 using System;
+using System.Configuration;
 using System.Data;
-using System.Data.OleDb;
-using System.IO;
+using Npgsql;
 using System.Windows.Forms;
 
 namespace FutbolTakimiYonetimSistemi.Data
 {
     public class DatabaseHelper
     {
-        private static readonly string DatabaseName = "FutbolTakimi.accdb";
         private static string _connectionString = "";
 
+        /// <summary>
+        /// App.config'ten bağlantı string'ini alır
+        /// </summary>
         public static string ConnectionString 
         {
             get
             {
                 if (string.IsNullOrEmpty(_connectionString))
                 {
-                    string dbPath = Path.Combine(Application.StartupPath, DatabaseName);
-                    _connectionString = $"Provider=Microsoft.ACE.OLEDB.12.0;Data Source={dbPath};Persist Security Info=False;";
+                    try
+                    {
+                        // App.config'ten al
+                        _connectionString = ConfigurationManager.ConnectionStrings["FutbolTakimiDB"]?.ConnectionString;
+
+                        if (string.IsNullOrEmpty(_connectionString))
+                        {
+                            throw new InvalidOperationException("App.config'te 'FutbolTakimiDB' bağlantı string'i bulunamadı!");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Bağlantı ayarları yüklenemedi: {ex.Message}\n\nApp.config dosyasını kontrol edin!", 
+                            "Yapılandırma Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        throw;
+                    }
                 }
                 return _connectionString;
             }
         }
 
-        public static OleDbConnection GetConnection()
+        public static NpgsqlConnection GetConnection()
         {
-            return new OleDbConnection(ConnectionString);
+            return new NpgsqlConnection(ConnectionString);
         }
 
-        public static DataTable ExecuteQuery(string query, params OleDbParameter[] parameters)
+        public static DataTable ExecuteQuery(string query, params NpgsqlParameter[] parameters)
         {
-            using (OleDbConnection connection = GetConnection())
+            using (NpgsqlConnection connection = GetConnection())
             {
                 try
                 {
                     connection.Open();
-                    using (OleDbCommand command = new OleDbCommand(query, connection))
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
                         if (parameters != null)
                         {
@@ -44,7 +60,7 @@ namespace FutbolTakimiYonetimSistemi.Data
                         }
 
                         DataTable dataTable = new DataTable();
-                        using (OleDbDataAdapter adapter = new OleDbDataAdapter(command))
+                        using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(command))
                         {
                             adapter.Fill(dataTable);
                         }
@@ -59,58 +75,44 @@ namespace FutbolTakimiYonetimSistemi.Data
             }
         }
 
-        public static int ExecuteNonQuery(string query, params OleDbParameter[] parameters)
+        public static int ExecuteNonQuery(string query, params NpgsqlParameter[] parameters)
         {
-            using (OleDbConnection connection = GetConnection())
+            using (NpgsqlConnection connection = GetConnection())
             {
-                OleDbTransaction transaction = null;
+                NpgsqlTransaction transaction = null;
                 try
                 {
                     connection.Open();
-                    // Begin a transaction to ensure database consistency
                     transaction = connection.BeginTransaction();
                     
-                    using (OleDbCommand command = new OleDbCommand(query, connection, transaction))
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection, transaction))
                     {
                         if (parameters != null)
                         {
                             command.Parameters.AddRange(parameters);
                         }
                         int result = command.ExecuteNonQuery();
-                        
-                        // If we got here without errors, commit the transaction
                         transaction.Commit();
                         return result;
                     }
                 }
-                catch (OleDbException dbEx)
-                {
-                    // Try to rollback the transaction if it exists
-                    try { transaction?.Rollback(); } catch { /* Ignore rollback error */ }
-                    
-                    string errorDetails = $"SQL Hata Kodu: {dbEx.ErrorCode}, Hata: {dbEx.Message}";
-                    MessageBox.Show($"Veritabanı işlemi sırasında hata oluştu: {errorDetails}", "Veritabanı Hatası", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return -1;
-                }
                 catch (Exception ex)
                 {
-                    // Try to rollback the transaction if it exists
-                    try { transaction?.Rollback(); } catch { /* Ignore rollback error */ }
-                    
-                    MessageBox.Show($"Veritabanı işlemi sırasında beklenmeyen hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    try { transaction?.Rollback(); } catch { }
+                    MessageBox.Show($"Veritabanı işlemi sırasında hata: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return -1;
                 }
             }
         }
 
-        public static object ExecuteScalar(string query, params OleDbParameter[] parameters)
+        public static object ExecuteScalar(string query, params NpgsqlParameter[] parameters)
         {
-            using (OleDbConnection connection = GetConnection())
+            using (NpgsqlConnection connection = GetConnection())
             {
                 try
                 {
                     connection.Open();
-                    using (OleDbCommand command = new OleDbCommand(query, connection))
+                    using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
                     {
                         if (parameters != null)
                         {
@@ -127,11 +129,72 @@ namespace FutbolTakimiYonetimSistemi.Data
             }
         }
 
+        // Stored Procedure çağırma metodu (YENİ)
+        public static DataTable ExecuteStoredProcedure(string procedureName, params NpgsqlParameter[] parameters)
+        {
+            using (NpgsqlConnection connection = GetConnection())
+            {
+                try
+                {
+                    connection.Open();
+                    using (NpgsqlCommand command = new NpgsqlCommand(procedureName, connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+
+                        DataTable dataTable = new DataTable();
+                        using (NpgsqlDataAdapter adapter = new NpgsqlDataAdapter(command))
+                        {
+                            adapter.Fill(dataTable);
+                        }
+                        return dataTable;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Stored Procedure hatası: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
+                }
+            }
+        }
+
+        // Stored Procedure scalar değer döndürme (YENİ)
+        public static object ExecuteStoredProcedureScalar(string procedureName, params NpgsqlParameter[] parameters)
+        {
+            using (NpgsqlConnection connection = GetConnection())
+            {
+                try
+                {
+                    connection.Open();
+                    using (NpgsqlCommand command = new NpgsqlCommand(procedureName, connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+                        
+                        if (parameters != null)
+                        {
+                            command.Parameters.AddRange(parameters);
+                        }
+
+                        return command.ExecuteScalar();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Stored Procedure hatası: {ex.Message}", "Hata", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return null;
+                }
+            }
+        }
+
         public static bool VerifyDatabaseConnection()
         {
             try
             {
-                using (OleDbConnection connection = GetConnection())
+                using (NpgsqlConnection connection = GetConnection())
                 {
                     connection.Open();
                     return true;
@@ -143,4 +206,4 @@ namespace FutbolTakimiYonetimSistemi.Data
             }
         }
     }
-} 
+}

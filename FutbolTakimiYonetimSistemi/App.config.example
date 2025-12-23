@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <connectionStrings>
+    <!-- PostgreSQL Bağlantı Ayarları -->
+    <!-- 
+      KURULUM TALİMATI:
+      1. Bu dosyayı "App.config" olarak kopyalayın
+      2. Password değerini kendi PostgreSQL şifrenizle değiştirin
+      3. App.config dosyası .gitignore'da olduğu için commit edilmeyecek
+    -->
+    <add name="FutbolTakimiDB" 
+         connectionString="Host=localhost;Port=5432;Database=futbol_takimi_db;Username=postgres;Password=YOUR_PASSWORD_HERE;Pooling=true;MinPoolSize=1;MaxPoolSize=20;ConnectionLifetime=15;" 
+         providerName="Npgsql" />
+  </connectionStrings>
+
+  <appSettings>
+    <!-- Uygulama Ayarları -->
+    <add key="AppName" value="Futbol Takımı Yönetim Sistemi" />
+    <add key="Version" value="2.0 - PostgreSQL (Güvenli)" />
+    
+    <!-- Güvenlik Ayarları -->
+    <add key="PasswordHashWorkFactor" value="11" />
+    <add key="SessionTimeoutMinutes" value="60" />
+    <add key="MaxLoginAttempts" value="5" />
+  </appSettings>
+</configuration>
+

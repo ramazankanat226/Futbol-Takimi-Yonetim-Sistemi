@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.OleDb;
+using Npgsql;
 using FutbolTakimiYonetimSistemi.Data;
 using FutbolTakimiYonetimSistemi.Models;
 
@@ -14,12 +14,12 @@ namespace FutbolTakimiYonetimSistemi.Services
             string query = @"SELECT FA.*, F.Ad, F.Soyad, F.FormaNo
                            FROM FutbolcuAntrenman FA
                            INNER JOIN Futbolcular F ON FA.FutbolcuID = F.FutbolcuID
-                           WHERE FA.AntrenmanID = ?
+                           WHERE FA.AntrenmanID = @AntrenmanID
                            ORDER BY F.Soyad, F.Ad";
 
-            var parameters = new OleDbParameter[]
+            var parameters = new NpgsqlParameter[]
             {
-                new OleDbParameter("@AntrenmanID", OleDbType.Integer) { Value = antrenmanId }
+                new NpgsqlParameter("@AntrenmanID", antrenmanId)
             };
 
             DataTable result = DatabaseHelper.ExecuteQuery(query, parameters);
@@ -41,12 +41,12 @@ namespace FutbolTakimiYonetimSistemi.Services
             string query = @"SELECT FA.*, A.Tarih, A.Tur
                            FROM FutbolcuAntrenman FA
                            INNER JOIN Antrenmanlar A ON FA.AntrenmanID = A.AntrenmanID
-                           WHERE FA.FutbolcuID = ?
+                           WHERE FA.FutbolcuID = @FutbolcuID
                            ORDER BY A.Tarih DESC";
 
-            var parameters = new OleDbParameter[]
+            var parameters = new NpgsqlParameter[]
             {
-                new OleDbParameter("@FutbolcuID", OleDbType.Integer) { Value = futbolcuId }
+                new NpgsqlParameter("@FutbolcuID", futbolcuId)
             };
 
             DataTable result = DatabaseHelper.ExecuteQuery(query, parameters);
@@ -59,9 +59,9 @@ namespace FutbolTakimiYonetimSistemi.Services
                     FutbolcuAntrenman fa = CreateFutbolcuAntrenmanFromDataRow(row);
                     fa.Antrenman = new Antrenman
                     {
-                        AntrenmanID = Convert.ToInt32(row["AntrenmanID"]),
-                        Tarih = Convert.ToDateTime(row["Tarih"]),
-                        Tur = row["Tur"].ToString()
+                        AntrenmanID = Convert.ToInt32(row["antrenmanid"]),
+                        Tarih = Convert.ToDateTime(row["tarih"]),
+                        Tur = row["tur"].ToString()
                     };
                     futbolcuAntrenmanlar.Add(fa);
                 }
@@ -74,32 +74,28 @@ namespace FutbolTakimiYonetimSistemi.Services
         {
             try
             {
-                // Önce bu antrenmana ait tüm katılımları sil
-                string deleteQuery = "DELETE FROM FutbolcuAntrenman WHERE AntrenmanID = ?";
-                var deleteParam = new OleDbParameter[] { new OleDbParameter("@AntrenmanID", OleDbType.Integer) { Value = antrenmanId } };
-                DatabaseHelper.ExecuteNonQuery(deleteQuery, deleteParam);
-
-                // Sonra yeni katılımları ekle
-                string insertQuery = "INSERT INTO FutbolcuAntrenman (FutbolcuID, AntrenmanID, Katilim, Performans) VALUES (?, ?, ?, ?)";
+                // PostgreSQL'de function SELECT ile çağrılır
+                string query = "SELECT sp_katilim_ekle(@p_futbolcu_id, @p_antrenman_id, @p_katilim, @p_performans, @p_notlar)";
                 
                 foreach (var futbolcuKatilim in futbolcuKatilimlar)
                 {
-                    var parameters = new OleDbParameter[]
+                    var parameters = new NpgsqlParameter[]
                     {
-                        new OleDbParameter("@FutbolcuID", OleDbType.Integer) { Value = futbolcuKatilim.Key },
-                        new OleDbParameter("@AntrenmanID", OleDbType.Integer) { Value = antrenmanId },
-                        new OleDbParameter("@Katilim", OleDbType.Boolean) { Value = futbolcuKatilim.Value },
-                        new OleDbParameter("@Performans", OleDbType.Integer) { Value = 0 } // Başlangıçta performans değeri 0
+                        new NpgsqlParameter("@p_futbolcu_id", futbolcuKatilim.Key),
+                        new NpgsqlParameter("@p_antrenman_id", antrenmanId),
+                        new NpgsqlParameter("@p_katilim", futbolcuKatilim.Value),
+                        new NpgsqlParameter("@p_performans", DBNull.Value),
+                        new NpgsqlParameter("@p_notlar", DBNull.Value)
                     };
 
-                    DatabaseHelper.ExecuteNonQuery(insertQuery, parameters);
+                    DatabaseHelper.ExecuteScalar(query, parameters);
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                System.Windows.Forms.MessageBox.Show("Katılım kaydedilirken hata oluştu: " + ex.Message, 
+                System.Windows.Forms.MessageBox.Show("Katılım kaydedilirken hata: " + ex.Message, 
                     "Hata", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 return false;
             }
@@ -109,12 +105,12 @@ namespace FutbolTakimiYonetimSistemi.Services
         {
             try
             {
-                string updateQuery = "UPDATE FutbolcuAntrenman SET Performans = ?, Notlar = ? WHERE FutbolcuAntrenmanID = ?";
-                var parameters = new OleDbParameter[]
+                string updateQuery = "UPDATE FutbolcuAntrenman SET Performans = @Performans, Notlar = @Notlar WHERE FutbolcuAntrenmanID = @FutbolcuAntrenmanID";
+                var parameters = new NpgsqlParameter[]
                 {
-                    new OleDbParameter("@Performans", OleDbType.Integer) { Value = performans },
-                    new OleDbParameter("@Notlar", OleDbType.VarChar, 500) { Value = notlar ?? (object)DBNull.Value },
-                    new OleDbParameter("@FutbolcuAntrenmanID", OleDbType.Integer) { Value = futbolcuAntrenmanId }
+                    new NpgsqlParameter("@Performans", performans),
+                    new NpgsqlParameter("@Notlar", (object)notlar ?? DBNull.Value),
+                    new NpgsqlParameter("@FutbolcuAntrenmanID", futbolcuAntrenmanId)
                 };
 
                 int result = DatabaseHelper.ExecuteNonQuery(updateQuery, parameters);
@@ -122,7 +118,7 @@ namespace FutbolTakimiYonetimSistemi.Services
             }
             catch (Exception ex)
             {
-                System.Windows.Forms.MessageBox.Show("Performans kaydedilirken hata oluştu: " + ex.Message, 
+                System.Windows.Forms.MessageBox.Show("Performans kaydedilirken hata: " + ex.Message, 
                     "Hata", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 return false;
             }
@@ -132,32 +128,31 @@ namespace FutbolTakimiYonetimSistemi.Services
         {
             FutbolcuAntrenman fa = new FutbolcuAntrenman
             {
-                FutbolcuAntrenmanID = Convert.ToInt32(row["FutbolcuAntrenmanID"]),
-                FutbolcuID = Convert.ToInt32(row["FutbolcuID"]),
-                AntrenmanID = Convert.ToInt32(row["AntrenmanID"]),
-                Katilim = Convert.ToBoolean(row["Katilim"]),
-                Performans = Convert.ToInt32(row["Performans"])
+                FutbolcuAntrenmanID = Convert.ToInt32(row["futbolcuantrenmanid"]),
+                FutbolcuID = Convert.ToInt32(row["futbolcuid"]),
+                AntrenmanID = Convert.ToInt32(row["antrenmanid"]),
+                Katilim = Convert.ToBoolean(row["katilim"]),
+                Performans = row["performans"] != DBNull.Value ? Convert.ToInt32(row["performans"]) : 0
             };
 
-            // Notlar alanı null olabilir
-            if (row["Notlar"] != DBNull.Value)
+            if (row["notlar"] != DBNull.Value)
             {
-                fa.Notlar = row["Notlar"].ToString();
+                fa.Notlar = row["notlar"].ToString();
             }
 
-            // Eğer futbolcu bilgileri varsa
-            if (row.Table.Columns.Contains("Ad") && row.Table.Columns.Contains("Soyad"))
+            // Futbolcu bilgileri varsa
+            if (row.Table.Columns.Contains("ad") && row.Table.Columns.Contains("soyad"))
             {
                 fa.Futbolcu = new Futbolcu
                 {
                     FutbolcuID = fa.FutbolcuID,
-                    Ad = row["Ad"].ToString(),
-                    Soyad = row["Soyad"].ToString()
+                    Ad = row["ad"].ToString(),
+                    Soyad = row["soyad"].ToString()
                 };
 
-                if (row.Table.Columns.Contains("FormaNo"))
+                if (row.Table.Columns.Contains("formano"))
                 {
-                    fa.Futbolcu.FormaNo = Convert.ToInt32(row["FormaNo"]);
+                    fa.Futbolcu.FormaNo = Convert.ToInt32(row["formano"]);
                 }
             }
 

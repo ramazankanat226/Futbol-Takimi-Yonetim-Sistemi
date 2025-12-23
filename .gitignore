@@ -1,3 +1,38 @@
+# Build outputs
+**/bin/
+**/obj/
+**/.vs/
+
+# User-specific / IDE
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build artifacts
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+
+# NuGet
+*.nupkg
+packages/
+
+# Backup / temp
+*.tmp
+*.temp
+*.bak
+*.orig
+
+# Config secrets
+FutbolTakimiYonetimSistemi/App.config
+
+# OS
+Thumbs.db
+Desktop.ini
+
 # Visual Studio dosyaları
 .vs/
 .vscode/
@@ -57,12 +92,19 @@ paket-files/
 *.nuget.targets
 
 # Windows Forms Designer oluşturulan dosyalar
-*.resx
+# *.resx - KALDIRILDI: resx dosyaları Windows Forms için gerekli
+# Sadece otomatik oluşturulan designer resx dosyalarını ignore et
+*.Designer.resx
 
 # SQL Server dosyaları
 *.mdf
 *.ldf
 *.ndf
+
+# Yapılandırma dosyaları (şifre içerir!)
+App.config
+**/App.config
+!**/*.config.example
 
 # Business Intelligence projects
 *.rdl.data

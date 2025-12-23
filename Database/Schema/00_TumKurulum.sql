@@ -1,0 +1,11 @@
+-- ============================================
+-- ⚠️ DİKKAT: BU DOSYA ESKİDİR!
+-- ============================================
+-- 
+-- Lütfen "00_TumKurulum_Full.sql" dosyasını kullanın.
+-- Bu dosya sadece geriye dönük uyumluluk için tutulmaktadır.
+--
+-- Yeni kurulumlar için:
+--   Database/Schema/00_TumKurulum_Full.sql
+--
+-- ============================================

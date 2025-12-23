@@ -18,6 +18,7 @@ namespace FutbolTakimiYonetimSistemi.Models
         public string Uyruk { get; set; }
         public string Durumu { get; set; }
         public byte[] Resim { get; set; }
+        public string Notlar { get; set; }
 
         public string TamAd => $"{Ad} {Soyad}";
         public int Yas => DateTime.Now.Year - DogumTarihi.Year - (DateTime.Now.DayOfYear < DogumTarihi.DayOfYear ? 1 : 0);

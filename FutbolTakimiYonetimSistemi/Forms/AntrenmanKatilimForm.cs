@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using FutbolTakimiYonetimSistemi.Models;
 using FutbolTakimiYonetimSistemi.Services;
+using FutbolTakimiYonetimSistemi.Utils;
 
 namespace FutbolTakimiYonetimSistemi.Forms
 {
@@ -44,6 +45,36 @@ namespace FutbolTakimiYonetimSistemi.Forms
             lblSaat.Text = $"Saat: {_antrenman.BaslangicSaati.ToShortTimeString()} - {_antrenman.BitisSaati.ToShortTimeString()}";
 
             YukleFutbolcular();
+            UygulaModernStiller();
+        }
+
+        private void UygulaModernStiller()
+        {
+            FormStilleri.ModernForm(this);
+            foreach (Control ctrl in this.Controls)
+            {
+                if (ctrl is Button btn)
+                {
+                    if (btn.Text.Contains("Kaydet")) FormStilleri.ModernButon(btn, "yesil");
+                    else if (btn.Text.Contains("İptal") || btn.Text.Contains("Kapat")) FormStilleri.ModernButon(btn, "gri");
+                    else FormStilleri.ModernButon(btn, "mavi");
+                }
+                else if (ctrl is Label lbl) FormStilleri.ModernLabel(lbl);
+                else if (ctrl is CheckedListBox) { }
+                else if (ctrl is Panel pnl) ApplyToPanel(pnl);
+            }
+        }
+
+        private void ApplyToPanel(Panel pnl)
+        {
+            foreach (Control ctrl in pnl.Controls)
+            {
+                if (ctrl is Button btn)
+                {
+                    if (btn.Text.Contains("Kaydet")) FormStilleri.ModernButon(btn, "yesil");
+                    else FormStilleri.ModernButon(btn, "gri");
+                }
+            }
         }
 
         private void YukleFutbolcular()
