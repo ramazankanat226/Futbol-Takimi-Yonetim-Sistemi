@@ -253,3 +253,4 @@ SELECT * FROM LogTablosu ORDER BY IslemZamani DESC LIMIT 1;
 
 
 
+

@@ -79,25 +79,13 @@ sp_sozlesme_biten_futbolcular -- Sözleşme takibi
 
 ## 📷 Ekran Görüntüleri
 
-### Giriş Ekranı
-![Giriş Ekranı](screenshots/GirişEkranı.png)
-*Yönetici ve Antrenör girişleri*
-
-### Ana Panel
-![Ana Ekran](screenshots/AnaEkran.png)
-*Futbolcu listesi ve yönetim paneli*
-
-### Futbolcu Yönetimi
-![Futbolcu Ekleme](screenshots/FutbolcuEkleme.png)
-*Detaylı futbolcu bilgileri formu*
-
-### Antrenman Yönetimi
-![Antrenman Ekleme](screenshots/AntrenmanEkleme.png)
-*Antrenman planlama ekranı*
-
-### Performans Takibi
-![Antrenmana Oyuncu Ekleme](screenshots/AntrenmanaOyuncuEkleme.png)
-*Katılım ve performans kayıt ekranı*
+| Ekran | Görsel | Açıklama |
+|-------|--------|----------|
+| Giriş Ekranı | ![Giriş Ekranı](screenshots/GirişEkranı.jpeg) | Yönetici ve Antrenör girişleri |
+| Futbolcu Listesi | ![FutbolcuListesi](screenshots/FutbolcuListesi.jpeg) | Futbolcu listesi ve yönetim paneli |
+| Futbolcu Ekleme | ![Futbolcu Ekleme](screenshots/futbolcuEkleme.jpg.jpeg) | Detaylı futbolcu formu |
+| Antrenman Listesi | ![AntrenmanListesi](screenshots/AntrenmanListesi.jpeg) | Antrenman planlama ekranı |
+| Antrenman Katılım | ![Antrenman Katılım](screenshots/antrenmanKatılım.jpeg) | Katılım ve performans kayıt ekranı |
 
 ---
 
