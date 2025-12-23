@@ -399,11 +399,12 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 
 ---
 
-## 👥 Geliştirici
+## 👥 Geliştiriciler
 
 **Ramazan Kanat**
 - GitHub: [@ramazankanat226](https://github.com/ramazankanat226)
-
+**Mert Semih Sarıyerli**
+- GitHub: [@mertsemih](https://github.com/mertsemih)
 ---
 
 ## 📞 İletişim ve Destek
