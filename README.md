@@ -403,7 +403,7 @@ Bu proje [MIT Lisansı](LICENSE) altında lisanslanmıştır.
 
 **Ramazan Kanat**
 - GitHub: [@ramazankanat226](https://github.com/ramazankanat226)
-**Mert Semih Sarıyerli**
+-**Mert Semih Sarıyerli**
 - GitHub: [@mertsemih](https://github.com/mertsemih)
 ---
 
